@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Outbox — Payment Service{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Outbox</h1>
+  <button class="btn" onclick="location.reload()">↻ Refresh</button>
+</div>
+
+<p class="muted">Последние 100 событий. Строки с <span class="badge pending">no</span> ещё не опубликованы relay-ем.</p>
+
+<table class="grid">
+  <thead><tr><th>ID</th><th>Event type</th><th>Payload</th><th>Created</th><th>Published</th></tr></thead>
+  <tbody>
+    {% for e in events %}
+      <tr>
+        <td class="mono small">{{ e.id|string|truncate(8, True, '') }}…</td>
+        <td>{{ e.event_type }}</td>
+        <td class="mono small">{{ e.payload | tojson }}</td>
+        <td class="mono small">{{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>
+          {% if e.published_at %}
+            <span class="badge succeeded">yes</span>
+            <span class="mono small">{{ e.published_at.strftime('%H:%M:%S') }}</span>
+          {% else %}
+            <span class="badge pending">no</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="empty">Empty</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
