@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Queues — Payment Service{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>RabbitMQ queues</h1>
+  <button class="btn" onclick="location.reload()">↻ Refresh</button>
+</div>
+
+{% if error %}
+  <div class="alert error">Не удалось получить список очередей: {{ error }}</div>
+{% endif %}
+
+<table class="grid">
+  <thead>
+    <tr><th>Queue</th><th>State</th><th>Messages</th><th>Ready</th><th>Unacked</th><th>Consumers</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for q in queues %}
+      <tr>
+        <td><a class="mono" href="/ui/queues/{{ q.name }}">{{ q.name }}</a></td>
+        <td><span class="badge {{ 'ok' if q.state == 'running' else 'bad' }}">{{ q.state }}</span></td>
+        <td class="mono">{{ q.messages }}</td>
+        <td class="mono">{{ q.messages_ready }}</td>
+        <td class="mono">{{ q.messages_unacknowledged }}</td>
+        <td class="mono">{{ q.consumers }}</td>
+        <td>
+          {% if q.name == dlq_name and q.messages %}
+            <form method="post" action="/ui/queues/{{ q.name }}/requeue-all" style="display:inline"
+                  onsubmit="return confirm('Requeue ALL messages back to payments.new?')">
+              <button class="btn small">↻ Requeue all</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">No queues</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

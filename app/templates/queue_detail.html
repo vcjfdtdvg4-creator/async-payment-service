@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ queue_name }} — Payment Service{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1 class="mono">{{ queue_name }}</h1>
+  <div>
+    <button class="btn" onclick="location.reload()">↻ Refresh</button>
+    <a class="btn ghost" href="/ui/queues">← Back</a>
+  </div>
+</div>
+
+{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+
+{% if info %}
+<div class="stats">
+  <div class="stat"><span class="label">Messages</span><span class="value">{{ info.messages }}</span></div>
+  <div class="stat"><span class="label">Ready</span><span class="value">{{ info.messages_ready }}</span></div>
+  <div class="stat"><span class="label">Unacked</span><span class="value">{{ info.messages_unacknowledged }}</span></div>
+  <div class="stat"><span class="label">Consumers</span><span class="value">{{ info.consumers }}</span></div>
+</div>
+
+<div class="actions-row">
+  {% if is_dlq and info.messages %}
+    <form method="post" action="/ui/queues/{{ queue_name }}/requeue-one" style="display:inline">
+      <button class="btn primary">↻ Requeue one → payments.new</button>
+    </form>
+    <form method="post" action="/ui/queues/{{ queue_name }}/requeue-all" style="display:inline"
+          onsubmit="return confirm('Requeue ALL messages?')">
+      <button class="btn primary">↻ Requeue all → payments.new</button>
+    </form>
+  {% endif %}
+  {% if info.messages %}
+    <form method="post" action="/ui/queues/{{ queue_name }}/purge" style="display:inline"
+          onsubmit="return confirm('Purge queue {{ queue_name }}? Это необратимо.')">
+      <button class="btn danger">🗑 Purge queue</button>
+    </form>
+  {% endif %}
+</div>
+{% endif %}
+
+<h2>Preview (up to 20, non-destructive)</h2>
+
+<table class="grid">
+  <thead><tr><th>Routing key</th><th>Attempt</th><th>Last error</th><th>Payload</th><th>Timestamp</th></tr></thead>
+  <tbody>
+    {% for m in messages %}
+      {% set h = m.properties.headers or {} %}
+      <tr>
+        <td class="mono small">{{ m.routing_key }}</td>
+        <td class="mono small">{{ h.get('x-attempt', '—') }}</td>
+        <td class="mono small">{{ h.get('x-last-error', '—') }}</td>
+        <td class="mono small">{{ m.payload }}</td>
+        <td class="mono small">{{ m.properties.timestamp or '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="empty">Queue is empty</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

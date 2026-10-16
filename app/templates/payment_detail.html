@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Payment {{ p.id }} — Payment Service{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>Payment <span class="mono">{{ p.id }}</span></h1>
+  <div>
+    <button class="btn" onclick="location.reload()">↻ Refresh</button>
+    <a class="btn ghost" href="/ui/">← Back</a>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <h2>Details</h2>
+    <dl class="kv">
+      <dt>Status</dt><dd><span class="badge {{ p.status }}">{{ p.status }}</span></dd>
+      <dt>Amount</dt><dd class="mono">{{ p.amount }} {{ p.currency }}</dd>
+      <dt>Description</dt><dd>{{ p.description }}</dd>
+      <dt>Webhook URL</dt><dd class="mono small">{{ p.webhook_url }}</dd>
+      <dt>Idempotency key</dt><dd class="mono small">{{ p.idempotency_key }}</dd>
+      <dt>Created</dt><dd class="mono small">{{ p.created_at.isoformat() }}</dd>
+      <dt>Processed</dt><dd class="mono small">{{ p.processed_at.isoformat() if p.processed_at else '—' }}</dd>
+      <dt>Webhook delivered</dt><dd class="mono small">{{ p.webhook_delivered_at.isoformat() if p.webhook_delivered_at else '—' }}</dd>
+    </dl>
+    <h3>Metadata</h3>
+    <pre class="code">{{ p.meta | tojson(indent=2) }}</pre>
+  </section>
+
+  <section class="card">
+    <h2>Webhook payload</h2>
+    <p class="muted">Отправляется на <code>{{ p.webhook_url }}</code> после обработки.</p>
+    <pre class="code">{{ webhook_payload }}</pre>
+  </section>
+</div>
+
+<section class="card">
+  <h2>Outbox events</h2>
+  <table class="grid">
+    <thead><tr><th>ID</th><th>Type</th><th>Created</th><th>Published</th></tr></thead>
+    <tbody>
+      {% for e in events %}
+        <tr>
+          <td class="mono small">{{ e.id }}</td>
+          <td>{{ e.event_type }}</td>
+          <td class="mono small">{{ e.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td class="mono small">
+            {% if e.published_at %}<span class="badge succeeded">yes</span> {{ e.published_at.strftime('%H:%M:%S') }}
+            {% else %}<span class="badge pending">no</span>{% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4" class="empty">No events</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+{% if p.status == 'pending' or not p.webhook_delivered_at %}
+<script>setTimeout(() => location.reload(), 4000);</script>
+{% endif %}
+{% endblock %}

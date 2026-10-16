@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}New payment — Payment Service{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <h1>New payment</h1>
+  <a class="btn ghost" href="/ui/">← Back</a>
+</div>
+
+{% if errors %}
+  <div class="alert error"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+{% endif %}
+
+<form class="card form" method="post" action="/ui/payments/new">
+  <div class="row">
+    <label>Amount
+      <input type="text" name="amount" placeholder="1500.00" value="{{ values.amount or '' }}" required>
+    </label>
+    <label>Currency
+      {% set cur = values.currency or 'RUB' %}
+      <select name="currency" required>
+        {% for c in ['RUB', 'USD', 'EUR'] %}
+          <option value="{{ c }}" {% if cur == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <label>Description
+    <input type="text" name="description" placeholder="Order #1001" value="{{ values.description or '' }}" required>
+  </label>
+
+  <label>Webhook URL
+    <input type="text" name="webhook_url" placeholder="https://webhook.site/your-uuid"
+           value="{{ values.webhook_url or '' }}" required>
+  </label>
+
+  <label>Metadata (JSON object, optional)
+    <textarea name="metadata" rows="4" placeholder='{"order_id": 1001}'>{{ values.metadata or '' }}</textarea>
+  </label>
+
+  <label>Idempotency-Key
+    <div class="row-inline">
+      <input type="text" name="idempotency_key" value="{{ values.idempotency_key or default_key }}" required>
+      <button type="button" class="btn ghost" onclick="regenKey()">↻</button>
+    </div>
+  </label>
+
+  <div class="actions">
+    <button type="submit" class="btn primary">Create payment</button>
+    <a class="btn ghost" href="/ui/">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function regenKey() {
+  const rand = Math.random().toString(16).slice(2, 14);
+  document.querySelector('input[name=idempotency_key]').value = 'ui-' + rand;
+}
+</script>
+{% endblock %}
