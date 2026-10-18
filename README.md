@@ -11,7 +11,8 @@ docker compose up --build
 
 - API: http://localhost:8000 (Swagger: `/docs`)
 - RabbitMQ UI: http://localhost:15672 (guest / guest)
-- Миграции применяются автоматически при старте `api`; `consumer` стартует после того, как `api` стал healthy.
+- Админка: http://localhost:8000/ui/ (вход по `API_KEY`)
+- Сервисы: `migrate` (alembic upgrade head, разовый) → `api`, `relay`, `consumer` стартуют после успешных миграций.
 
 ## Примеры
 
@@ -44,7 +45,7 @@ curl -s http://localhost:8000/api/v1/payments/<payment_id> -H "X-API-Key: super-
 ```
 POST /payments ──► [payments + outbox в одной транзакции] ──► PostgreSQL
                                    │
-              outbox relay (фон. задача в api, SKIP LOCKED, publisher confirms)
+              outbox relay (отдельный сервис, SKIP LOCKED, publisher confirms)
                                    ▼
         exchange "payments" ──payments.new──► queue payments.new ──► consumer
                                                    │ ошибка
@@ -75,16 +76,42 @@ webhook повторно не отправляется, если выставл�
 
 ## Структура
 
+Слоистая архитектура: зависимости направлены внутрь, `domain` ничего не знает о FastAPI, SQLAlchemy и RabbitMQ.
+
 ```
 app/
-  api.py        эндпоинты
-  main.py       FastAPI + запуск outbox relay
-  outbox.py     outbox relay
-  messaging.py  exchange, очереди, retry/DLQ-топология
-  consumer.py   FastStream consumer
-  webhook.py    отправка webhook
-  models.py / schemas.py / db.py / config.py / security.py
-alembic/versions/0001_init.py   таблицы payments и outbox
+  config.py                      настройки (pydantic-settings, .env)
+  domain/                        бизнес-модель, без внешних зависимостей
+    payments/                    entity (Payment), values (Currency, Status), events, exceptions
+    ports/                       протоколы: UnitOfWork, PaymentRepository, PaymentGateway, PaymentNotifier, Clock
+  application/                   сценарии (use cases)
+    payments/                    create_payment (идемпотентность, 409), get_payment, process_payment
+    admin/                       список/статистика платежей, детали + outbox, управление очередями, порты read-моделей
+  infrastructure/                реализации портов
+    db/                          engine/session, ORM-модели payments и outbox
+    repositories/ mappers/ uow.py    SQLAlchemy-репозитории, ORM <-> entity, Unit of Work (+ запись событий в outbox)
+    outbox/                      сериализация событий и relay
+    broker/                      подключение, топология (exchange, retry-очереди, DLQ), retry-публикация, publisher для requeue
+    gateway/emulator.py          эмуляция платёжного шлюза
+    webhooks/                    payload и HTTP-отправка webhook
+    rabbitmq_management/         клиент Management API для админки
+  presentation/
+    api/                         JSON API: routers, schemas, presenters, deps (auth, use cases), errors
+    consumer/                    обработчик payments.new, схема сообщения, зависимости
+    ui/                          админка: routers (auth, dashboard, payments, outbox, queues), templates, static
+  entrypoints/                   точки входа процессов
+    api.py                       uvicorn app.entrypoints.api:app
+    relay.py                     faststream run app.entrypoints.relay:app
+    consumer.py                  faststream run app.entrypoints.consumer:app
+migrations/                      alembic (0001: таблицы payments и outbox)
+tests/                           unit-тесты домена и use cases, тесты API и consumer (без БД и брокера)
 ```
 
+## Разработка и тесты
 
+Зависимости описаны в `pyproject.toml` и зафиксированы в `uv.lock` ([uv](https://docs.astral.sh/uv/)).
+
+```bash
+uv sync           # создаст .venv с зависимостями, включая dev
+uv run pytest     # тесты не требуют PostgreSQL и RabbitMQ
+```
