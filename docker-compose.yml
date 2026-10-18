@@ -31,7 +31,7 @@ services:
     ports:
       - "15672:15672"   # management UI (guest/guest)
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
       interval: 5s
       timeout: 5s
       retries: 20
