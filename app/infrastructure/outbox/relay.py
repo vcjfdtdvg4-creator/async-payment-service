@@ -1,9 +1,3 @@
-"""Outbox relay: читает неопубликованные события из БД и публикует их в RabbitMQ.
-
-Гарантия: at-least-once. Событие помечается published_at только после подтверждения
-брокера (publisher confirms). SELECT ... FOR UPDATE SKIP LOCKED позволяет безопасно
-запускать несколько экземпляров relay.
-"""
 import asyncio
 import logging
 from datetime import datetime, timezone
@@ -77,7 +71,7 @@ class OutboxRelay:
                     )
                 except Exception:
                     logger.exception("Publish failed, will retry later (event=%s)", message.id)
-                    break  # уже опубликованные в этом батче фиксируем коммитом
+                    break
                 published_ids.append(message.id)
 
             await outbox.mark_published(published_ids, datetime.now(timezone.utc))

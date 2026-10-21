@@ -70,7 +70,6 @@ class Payment:
         webhook_url: str,
         meta: dict[str, Any],
     ) -> bool:
-        """Совпадает ли платёж с телом повторного запроса (для идемпотентности)."""
         return (
             self.amount == amount
             and self.currency == currency

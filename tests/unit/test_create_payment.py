@@ -42,7 +42,7 @@ async def test_same_key_same_body_returns_existing_payment():
     assert not second.created
     assert second.payment_id == first.payment_id
     assert len(uow.payments.rows) == 1
-    assert len(uow.outbox) == 1  # второе событие не создаётся
+    assert len(uow.outbox) == 1
 
 
 async def test_same_key_different_body_conflicts():

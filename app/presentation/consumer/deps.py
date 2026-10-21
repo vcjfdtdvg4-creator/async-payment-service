@@ -14,8 +14,6 @@ from app.infrastructure.webhooks.client import HttpWebhookNotifier
 _gateway = EmulatedPaymentGateway()
 
 
-# FastDepends валидирует аннотации зависимостей через isinstance,
-# поэтому здесь конкретный класс, а не Protocol UnitOfWork.
 def get_uow() -> SqlAlchemyUnitOfWork:
     return SqlAlchemyUnitOfWork(session_factory)
 

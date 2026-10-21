@@ -10,11 +10,11 @@ _QUEUE_RE = re.compile(r"^payments\.[A-Za-z0-9._-]+$")
 
 
 class UnknownQueueError(Exception):
-    """Админка работает только с очередями сервиса."""
+    ...
 
 
 class RequeueNotAllowedError(Exception):
-    """Возвращать сообщения в работу можно только из DLQ."""
+    ...
 
 
 def check_queue_name(name: str) -> str:
@@ -54,11 +54,10 @@ class QueueAdminUseCase:
     async def snapshot(self, name: str) -> QueueSnapshot:
         check_queue_name(name)
         info = await self._admin.get_queue(name)
-        messages = await self._admin.peek(name, self._preview_size)  # не destructive
+        messages = await self._admin.peek(name, self._preview_size)
         return QueueSnapshot(name=name, info=info, messages=messages)
 
     async def requeue(self, name: str, count: int) -> int:
-        """Переносит до count сообщений из DLQ обратно в payments.new (x-attempt=1)."""
         check_queue_name(name)
         if name != self._dlq_name:
             raise RequeueNotAllowedError(name)

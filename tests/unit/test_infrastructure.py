@@ -22,7 +22,7 @@ def test_attempt_from_headers(headers, expected):
 
 
 def test_retry_queues_have_growing_ttl():
-    queues = retry_queues()  # max_attempts=3 -> 2 retry-очереди
+    queues = retry_queues()
     assert [q.name for q in queues] == ["payments.new.retry.1", "payments.new.retry.2"]
     assert [q.arguments["x-message-ttl"] for q in queues] == [5000, 10000]
 

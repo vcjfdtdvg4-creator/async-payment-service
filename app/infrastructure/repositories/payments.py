@@ -15,7 +15,7 @@ from app.infrastructure.mappers.payment import to_entity, to_model
 class SqlAlchemyPaymentRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
-        self.seen: list[Payment] = []  # агрегаты, чьи события UoW сохранит в outbox
+        self.seen: list[Payment] = []
 
     async def add(self, payment: Payment) -> None:
         model = to_model(payment)

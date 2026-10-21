@@ -13,7 +13,6 @@ LAST_ERROR_HEADER = "x-last-error"
 
 
 def attempt_from_headers(headers: Mapping[str, Any] | None) -> int:
-    """Номер текущей попытки (с 1). Мусор в заголовке трактуется как первая попытка."""
     try:
         return max(1, int((headers or {}).get(ATTEMPT_HEADER, 1)))
     except (TypeError, ValueError):
@@ -21,8 +20,6 @@ def attempt_from_headers(headers: Mapping[str, Any] | None) -> int:
 
 
 class RetryPublisher:
-    """Отправляет упавшее сообщение в retry-очередь с задержкой или, если попытки кончились, в DLQ."""
-
     def __init__(self, broker: RabbitBroker, max_attempts: int) -> None:
         self._broker = broker
         self._max_attempts = max_attempts

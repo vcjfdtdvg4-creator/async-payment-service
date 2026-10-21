@@ -11,8 +11,6 @@ from app.infrastructure.outbox.message import OutboxMessage
 
 
 class SqlAlchemyOutboxRepository:
-    """Запись и выборка outbox внутри транзакции вызывающего кода."""
-
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
@@ -20,7 +18,6 @@ class SqlAlchemyOutboxRepository:
         self._session.add(to_model(message))
 
     async def fetch_unpublished(self, limit: int) -> list[OutboxMessage]:
-        """SELECT ... FOR UPDATE SKIP LOCKED: несколько relay не возьмут одно событие."""
         rows = await self._session.scalars(
             select(OutboxModel)
             .where(OutboxModel.published_at.is_(None))
@@ -38,8 +35,6 @@ class SqlAlchemyOutboxRepository:
 
 
 class SqlAlchemyOutboxReader:
-    """Read-модель outbox для админки."""
-
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 

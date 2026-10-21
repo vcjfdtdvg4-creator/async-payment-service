@@ -25,6 +25,4 @@ async def handle_payment_created(
     try:
         await use_case.execute(event.payment_id)
     except Exception as exc:  # noqa: BLE001
-        # Если публикация retry/DLQ тоже упадёт, исключение уйдёт наружу -> reject ->
-        # main-очередь отправит сообщение в DLQ через dead-letter-exchange.
         await retry.reroute({"payment_id": str(event.payment_id)}, attempt, exc)

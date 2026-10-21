@@ -26,8 +26,6 @@ class _RecordingRetry(RetryPublisher):
 
 
 class _State:
-    """FastStream строит граф зависимостей один раз, поэтому фейки подменяем через общий holder."""
-
     uow: FakeUnitOfWork
     notifier: FakeNotifier
     retry: _RecordingRetry

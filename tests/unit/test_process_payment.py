@@ -54,7 +54,7 @@ async def test_webhook_failure_keeps_status_and_retries_only_webhook(make_paymen
 
     notifier = FakeNotifier()
     await _use_case(uow, gateway, notifier).execute(pid)
-    assert len(gateway.calls) == 1  # статус не пересчитан
+    assert len(gateway.calls) == 1
     assert len(notifier.sent) == 1
 
 

@@ -1,12 +1,3 @@
-"""Топология RabbitMQ — общая для relay и consumer.
-
-payments (direct exchange) --payments.new--> payments.new (queue)
-        при ошибке обработки consumer публикует сообщение в
-        payments.new.retry.N (TTL = base * 2^(N-1), по истечении TTL возвращается
-        в exchange payments), а после исчерпания попыток -- в payments.dlq.
-        Если сообщение отвергнуто (reject), main-очередь сама отправляет его в DLQ
-        через dead-letter-exchange.
-"""
 from faststream.rabbit import ExchangeType, RabbitBroker, RabbitExchange, RabbitQueue
 
 from app.config import settings
@@ -21,8 +12,8 @@ new_queue = RabbitQueue(
     durable=True,
     routing_key=NEW_ROUTING_KEY,
     arguments={
-        "x-dead-letter-exchange": "",           # default exchange
-        "x-dead-letter-routing-key": DLQ_NAME,  # -> payments.dlq
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": DLQ_NAME,
     },
 )
 
@@ -30,7 +21,6 @@ dlq = RabbitQueue(DLQ_NAME, durable=True)
 
 
 def retry_delay_seconds(attempt: int) -> int:
-    """Задержка перед следующей попыткой после неудачной попытки №attempt."""
     return settings.retry_base_delay_seconds * 2 ** (attempt - 1)
 
 
@@ -39,8 +29,6 @@ def retry_queue_name(attempt: int) -> str:
 
 
 def retry_queues() -> list[RabbitQueue]:
-    # N попыток => N-1 повторов => N-1 retry-очередей (отдельная очередь на каждую
-    # задержку, чтобы не было head-of-line blocking из-за разных TTL).
     return [
         RabbitQueue(
             retry_queue_name(a),
@@ -56,7 +44,6 @@ def retry_queues() -> list[RabbitQueue]:
 
 
 async def declare_topology(broker: RabbitBroker) -> None:
-    """Идемпотентно объявляет exchange, очереди и binding."""
     exchange = await broker.declare_exchange(payments_exchange)
     main = await broker.declare_queue(new_queue)
     await main.bind(exchange, routing_key=NEW_ROUTING_KEY)

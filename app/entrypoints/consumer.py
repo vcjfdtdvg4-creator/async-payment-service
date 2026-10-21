@@ -1,4 +1,3 @@
-"""Consumer: обработка платежа -> обновление БД -> webhook, с retry и DLQ."""
 import httpx
 from faststream import ContextRepo, FastStream
 

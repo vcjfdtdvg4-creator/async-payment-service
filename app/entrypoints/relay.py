@@ -1,4 +1,3 @@
-"""Outbox relay: отдельный процесс, переносит события из таблицы outbox в RabbitMQ."""
 from faststream import FastStream
 
 from app.config import settings

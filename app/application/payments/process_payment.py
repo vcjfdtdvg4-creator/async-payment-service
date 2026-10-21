@@ -12,12 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class ProcessPaymentUseCase:
-    """Обработка платежа: шлюз -> статус в БД -> webhook.
-
-    Идемпотентна: повторная доставка сообщения не пересчитывает статус
-    и не шлёт webhook повторно, если он уже доставлен.
-    """
-
     def __init__(
         self,
         uow: UnitOfWork,
@@ -36,14 +30,13 @@ class ProcessPaymentUseCase:
         if not payment.is_final:
             status = await self._gateway.charge(payment)
             async with self._uow:
-                # условный UPDATE: при гонке дубликатов статус выставит только один
                 await self._uow.payments.mark_processed(payment.id, status, self._clock.now())
                 await self._uow.commit()
             payment = await self._load(payment_id)
             logger.info("Payment %s processed: %s", payment_id, payment.status)
 
         if not payment.is_webhook_delivered:
-            await self._notifier.notify(payment)  # исключение -> retry всего сообщения
+            await self._notifier.notify(payment)
             async with self._uow:
                 await self._uow.payments.mark_webhook_delivered(payment.id, self._clock.now())
                 await self._uow.commit()

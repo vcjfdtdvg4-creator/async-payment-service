@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 
-# Настройки для тестов: без .env и без реальных сервисов.
 os.environ.setdefault("API_KEY", "test-key")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")

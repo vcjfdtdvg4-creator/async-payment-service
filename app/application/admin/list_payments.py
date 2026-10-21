@@ -19,7 +19,7 @@ class PaymentsPage:
     total: int
     page: int
     total_pages: int
-    stats: dict[Status, int]  # по всем платежам, без учёта фильтра
+    stats: dict[Status, int]
 
 
 class ListPaymentsUseCase:

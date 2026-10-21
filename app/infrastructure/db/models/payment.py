@@ -25,7 +25,6 @@ class PaymentModel(Base):
     amount: Mapped[Decimal] = mapped_column(Numeric(18, 2))
     currency: Mapped[str] = mapped_column(String(3))
     description: Mapped[str] = mapped_column(Text)
-    # "metadata" зарезервировано в Declarative, поэтому атрибут называется meta
     meta: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, server_default=text("'{}'::jsonb")
     )

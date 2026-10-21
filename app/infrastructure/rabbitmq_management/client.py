@@ -7,8 +7,6 @@ _VHOST = "%2F"
 
 
 class RabbitManagementQueueAdmin:
-    """Реализация QueueAdmin поверх RabbitMQ Management HTTP API (порт 15672)."""
-
     def __init__(self, base_url: str, user: str, password: str, timeout: float = 10.0) -> None:
         self._base_url = base_url
         self._auth = (user, password)

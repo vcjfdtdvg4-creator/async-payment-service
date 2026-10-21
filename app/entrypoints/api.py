@@ -28,9 +28,9 @@ def create_app() -> FastAPI:
         description="JSON API + встроенная админка: **/ui/**",
         lifespan=lifespan,
     )
-    app.include_router(payments_router)  # JSON API под X-API-Key
-    app.include_router(ui_router)        # админка под cookie-сессией
-    app.include_router(system_router)    # /health, / -> /ui/
+    app.include_router(payments_router)
+    app.include_router(ui_router)
+    app.include_router(system_router)
     app.mount("/ui/static", StaticFiles(directory=str(STATIC_DIR)), name="ui-static")
 
     register_exception_handlers(app)

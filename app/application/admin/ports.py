@@ -1,4 +1,3 @@
-"""Порты read-моделей админки (outbox, очереди брокера)."""
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Protocol
@@ -20,11 +19,6 @@ class OutboxReader(Protocol):
 
 
 class QueueAdmin(Protocol):
-    """Чтение и управление очередями брокера (RabbitMQ Management API).
-
-    Очереди и сообщения отдаются в «сыром» виде management API.
-    """
-
     async def list_queues(self, prefix: str) -> list[dict[str, Any]]: ...
     async def get_queue(self, name: str) -> dict[str, Any]: ...
     async def peek(self, name: str, count: int) -> list[dict[str, Any]]: ...

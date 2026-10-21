@@ -25,16 +25,10 @@ class CreatePaymentResult:
     payment_id: UUID
     status: Status
     created_at: datetime | None
-    created: bool  # False -> вернули уже существующий платёж
+    created: bool
 
 
 class CreatePaymentUseCase:
-    """Идемпотентно создаёт платёж; событие PaymentCreated уходит в outbox в той же транзакции.
-
-    Повтор с тем же ключом и тем же телом возвращает существующий платёж,
-    с другим телом -- IdempotencyConflictError.
-    """
-
     def __init__(self, uow: UnitOfWork) -> None:
         self._uow = uow
 
@@ -56,7 +50,6 @@ class CreatePaymentUseCase:
                 await self._uow.payments.add(payment)
                 await self._uow.commit()
         except DuplicateIdempotencyKeyError:
-            # гонка одинаковых запросов: платёж вставил параллельный запрос
             async with self._uow:
                 existing = await self._uow.payments.get_by_idempotency_key(cmd.idempotency_key)
             if existing is None:

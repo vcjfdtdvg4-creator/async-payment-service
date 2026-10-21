@@ -1,4 +1,3 @@
-"""In-memory реализации портов для unit-тестов (без БД и брокера)."""
 from __future__ import annotations
 
 import copy
@@ -19,7 +18,7 @@ class InMemoryPaymentRepository:
     def __init__(self) -> None:
         self.rows: dict[UUID, Payment] = {}
         self.seen: list[Payment] = []
-        self.race_with: Payment | None = None  # эмуляция параллельной вставки
+        self.race_with: Payment | None = None
 
     async def add(self, payment: Payment) -> None:
         if self.race_with is not None:

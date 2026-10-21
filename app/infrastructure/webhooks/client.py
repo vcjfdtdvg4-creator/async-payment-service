@@ -5,11 +5,6 @@ from app.infrastructure.webhooks.payload import build_webhook_payload
 
 
 class HttpWebhookNotifier:
-    """POST JSON на webhook_url. Бросает исключение при сетевой ошибке или не-2xx ответе.
-
-    Повторные попытки выполняются не здесь, а на уровне consumer'а через retry-очереди.
-    """
-
     def __init__(self, client: httpx.AsyncClient) -> None:
         self._client = client
 

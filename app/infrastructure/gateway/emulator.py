@@ -6,8 +6,6 @@ from app.domain.payments.values import Status
 
 
 class EmulatedPaymentGateway:
-    """Эмуляция внешнего шлюза: задержка 2–5 с, 90 % succeeded / 10 % failed."""
-
     def __init__(
         self,
         min_delay: float = 2.0,

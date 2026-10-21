@@ -1,7 +1,3 @@
-"""Простая cookie-сессия для админки.
-
-Токены хранятся в памяти процесса api; рестарт сбрасывает сессии. Сам API-ключ в cookie не уходит.
-"""
 import secrets
 from typing import Annotated
 
@@ -25,6 +21,5 @@ def drop_session(token: str | None) -> None:
 
 async def require_session(ui_session: Annotated[str | None, Cookie()] = None) -> str:
     if not ui_session or ui_session not in _sessions:
-        # 303 + Location -> браузер сам уйдёт на форму логина
         raise HTTPException(status_code=status.HTTP_303_SEE_OTHER, headers={"Location": "/ui/login"})
     return ui_session

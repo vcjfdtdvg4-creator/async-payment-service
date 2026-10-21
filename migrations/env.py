@@ -5,7 +5,7 @@ from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.config import settings
-from app.infrastructure.db import models  # noqa: F401  (регистрирует таблицы в metadata)
+from app.infrastructure.db import models  # noqa: F401
 from app.infrastructure.db.base import Base
 
 config = context.config

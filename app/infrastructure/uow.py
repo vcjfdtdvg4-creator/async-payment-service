@@ -9,8 +9,6 @@ from app.infrastructure.repositories.payments import SqlAlchemyPaymentRepository
 
 
 class SqlAlchemyUnitOfWork:
-    """Транзакция над payments + outbox (Outbox pattern: платёж и событие пишутся атомарно)."""
-
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 

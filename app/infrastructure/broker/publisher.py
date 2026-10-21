@@ -6,12 +6,6 @@ from app.infrastructure.broker.topology import NEW_ROUTING_KEY, payments_exchang
 
 
 class RabbitPaymentEventPublisher:
-    """Публикует сообщения в payments.new. Используется админкой (requeue из DLQ).
-
-    Соединение открывается на время вызова: операция редкая, а API не должен
-    зависеть от доступности брокера при старте.
-    """
-
     def __init__(self, rabbitmq_url: str) -> None:
         self._url = rabbitmq_url
 

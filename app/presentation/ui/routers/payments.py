@@ -53,7 +53,7 @@ async def new_payment_submit(
         meta_obj = json.loads(metadata) if metadata.strip() else {}
         if not isinstance(meta_obj, dict):
             raise ValueError("must be a JSON object")
-    except ValueError as exc:  # JSONDecodeError наследует ValueError
+    except ValueError as exc:
         return fail([f"metadata: {exc}"])
 
     if not 1 <= len(idempotency_key) <= 255:
